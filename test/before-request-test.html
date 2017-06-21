@@ -1,0 +1,147 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../iron-test-helpers/test-helpers.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+  <!-- Step 1: import the element to test -->
+  <link rel="import" href="../authorization-data-saver.html">
+</head>
+
+<body>
+  <test-fixture id="basic">
+    <template>
+      <authorization-data-saver></authorization-data-saver>
+    </template>
+  </test-fixture>
+  <script>
+  /* global sinon, fixture, assert */
+
+  const initHeaders = 'x-token: abc';
+  const initUrl = 'http://domain.com/?c=d';
+  const initUrlClean = 'http://domain.com/';
+
+  function fire(name, detail, node) {
+    var event = new CustomEvent(name, {
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+      detail: detail
+    });
+    (node || document).dispatchEvent(event);
+    return event;
+  }
+
+  function beforeRequestEvent(headers) {
+    headers = headers || initHeaders;
+    return fire('before-request', {
+      url: initUrl,
+      method: 'GET',
+      headers: headers,
+      promises: [],
+      reason: undefined,
+      auth: undefined
+    });
+  };
+
+  const authObj = {
+    username: 'test',
+    password: 'test',
+    domain: 'domain.com',
+    method: 'ntlm'
+  };
+
+  const basicObj = {
+    username: 'test',
+    password: 'test',
+    hash: 'dGVzdDp0ZXN0'
+  };
+
+  suite('before-request tests', function() {
+    var element;
+    setup(function() {
+      element = fixture('basic');
+    });
+
+    test('Should not cancel the event', function() {
+      var event = beforeRequestEvent();
+      assert.isFalse(event.defaultPrevented);
+    });
+
+    test('Should not alter the request header', function() {
+      var event = beforeRequestEvent();
+      assert.equal(event.detail.headers, initHeaders);
+    });
+
+    test('Should not set auth data', function() {
+      var event = beforeRequestEvent();
+      assert.isUndefined(event.detail.auth);
+    });
+
+    test('Should set authorization header', function() {
+      element._cache = {
+        basic: {}
+      };
+      element._cache.basic[initUrlClean] = basicObj;
+      var event = beforeRequestEvent();
+      assert.notEqual(event.detail.headers.indexOf('authorization'), -1);
+    });
+
+    test('Should fire request-headers-changed custom event', function() {
+      element._cache = {
+        basic: {}
+      };
+      element._cache.basic[initUrlClean] = basicObj;
+
+      var spy = sinon.spy();
+      element.addEventListener('request-headers-changed', spy);
+      beforeRequestEvent();
+      assert.isTrue(spy.calledOnce);
+    });
+
+    test('Should set auth data', function() {
+      element._cache = {
+        ntlm: {}
+      };
+      element._cache.ntlm[initUrlClean] = authObj;
+      var event = beforeRequestEvent();
+      assert.deepEqual(event.detail.auth, authObj);
+    });
+
+    test('Should not alter request headers if authorization is set', function() {
+      element._cache = {
+        basic: {}
+      };
+      element._cache.basic[initUrlClean] = basicObj;
+      const headers = initHeaders + '\nauthorization: test';
+      var event = beforeRequestEvent(headers);
+      assert.equal(event.detail.headers, headers);
+    });
+
+    test('Should set auth data if authorization is set', function() {
+      element._cache = {
+        ntlm: {}
+      };
+      element._cache.ntlm[initUrlClean] = authObj;
+      const headers = initHeaders + '\nauthorization: test';
+      var event = beforeRequestEvent(headers);
+      assert.isUndefined(event.detail.auth);
+    });
+  });
+  </script>
+</body>
+
+</html>

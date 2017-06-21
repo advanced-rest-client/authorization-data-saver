@@ -1,0 +1,127 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../iron-test-helpers/test-helpers.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+  <!-- Step 1: import the element to test -->
+  <link rel="import" href="../authorization-data-saver.html">
+</head>
+
+<body>
+  <test-fixture id="basic">
+    <template>
+      <authorization-data-saver></authorization-data-saver>
+    </template>
+  </test-fixture>
+  <script>
+  /* global sinon, fixture, assert */
+
+  const initHeaders = 'x-token: abc';
+  const initUrl = 'http://domain.com/?c=d';
+  const initUrlClean = 'http://domain.com/';
+
+  function fire(name, detail, node) {
+    var event = new CustomEvent(name, {
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+      detail: detail
+    });
+    (node || document).dispatchEvent(event);
+    return event;
+  }
+
+  function createResponse(authType, status, text, headers) {
+    status = status || 401;
+    text = text || 'Authorization required';
+    var headers = {'x-token': 'abc'};
+    if (authType === 'ntlm') {
+      headers['www-authenticate'] = 'ntlm';
+    } else if (authType === 'basic') {
+      headers['www-authenticate'] = 'basic';
+    }
+    return new Response('test', {
+      status: status,
+      statusText: text,
+      headers: headers
+    });
+  }
+
+  function createRequest(authType) {
+    return new Request(initUrl, {
+      method: 'GET',
+      headers: {'x-token': 'abc'}
+    });
+  }
+
+  function afterRequestEvent(authType, status, text, headers) {
+    return fire('response-ready', {
+      request: createRequest(),
+      response: createResponse(authType, status, text, headers),
+      auth: undefined
+    });
+  };
+
+  const authObj = {
+    username: 'test',
+    password: 'test',
+    domain: 'domain.com',
+    method: 'ntlm'
+  };
+
+  const basicObj = {
+    username: 'test',
+    password: 'test',
+    hash: 'dGVzdDp0ZXN0'
+  };
+
+  suite('after-request tests', function() {
+    var element;
+    setup(function() {
+      element = fixture('basic');
+    });
+
+    test('Should open basic dialog', function(done) {
+      element.addEventListener('iron-overlay-opened', function(e) {
+        assert.equal(element.dialog.nodeName, 'AUTH-DIALOG-BASIC', 'Dialog is auth-dialog-basic');
+        assert.isTrue(element.dialog.opened, 'Dialog is opened');
+        done();
+      });
+      afterRequestEvent('basic');
+    });
+
+    test('Should open ntlm dialog', function(done) {
+      element.addEventListener('iron-overlay-opened', function(e) {
+        assert.equal(element.dialog.nodeName, 'AUTH-DIALOG-NTLM', 'Dialog is auth-dialog-ntlm');
+        assert.isTrue(element.dialog.opened, 'Dialog is opened');
+        done();
+      });
+      afterRequestEvent('ntlm');
+    });
+
+    test('Should not open a dialog', function(done) {
+      afterRequestEvent();
+      setTimeout(function() {
+        assert.equal(element.dialog, null);
+        done();
+      }, 300);
+    });
+  });
+  </script>
+</body>
+
+</html>

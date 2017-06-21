@@ -1,0 +1,365 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../iron-test-helpers/test-helpers.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+  <!-- Step 1: import the element to test -->
+  <link rel="import" href="../authorization-data-saver.html">
+</head>
+
+<body>
+  <test-fixture id="basic">
+    <template>
+      <authorization-data-saver></authorization-data-saver>
+    </template>
+  </test-fixture>
+  <script>
+  /* global fixture, assert */
+  const initUrl = 'http://domain.com/path/?c=d#hash';
+  const cleanUrl = 'http://domain.com/path/';
+
+  function createResponse(status, text, headers) {
+    status = status || 401;
+    text = text || 'Authorization required';
+    headers = headers || {'www-authenticate': 'basic'};
+    return new Response('test', {
+      status: status,
+      statusText: text,
+      headers: headers
+    });
+  }
+
+  function createRequest() {
+    return new Request(initUrl, {
+      method: 'GET',
+      headers: {'x-token': 'abc'}
+    });
+  }
+
+  const basicObj = {
+    username: 'test',
+    password: 'test',
+    hash: 'dGVzdDp0ZXN0'
+  };
+
+  const authObj = {
+    username: 'test',
+    password: 'test',
+    domain: 'domain.com',
+    method: 'ntlm'
+  };
+
+  suite('basic', function() {
+
+    suite('authorizationMethodFromResponse', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Should not return for not 401 status', function() {
+        var response = createResponse(200, 'OK');
+        var method = element.authorizationMethodFromResponse(response);
+        assert.isUndefined(method);
+      });
+
+      test('Should not return if no www-authenticate header is present', function() {
+        var response = createResponse(null, null, {});
+        var method = element.authorizationMethodFromResponse(response);
+        assert.isUndefined(method);
+      });
+
+      test('Should return "basic"', function() {
+        var response = createResponse();
+        var method = element.authorizationMethodFromResponse(response);
+        assert.equal(method, 'basic');
+      });
+
+      test('Should return "ntlm"', function() {
+        var response = createResponse(null, null, {'www-authenticate': 'ntlm'});
+        var method = element.authorizationMethodFromResponse(response);
+        assert.equal(method, 'ntlm');
+      });
+    });
+
+    suite('_processAuthResponse()', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Should open basic dialog', function() {
+        var request = createRequest();
+        var method = element._processAuthResponse('basic', request);
+        assert.equal(element.dialog.nodeName, 'AUTH-DIALOG-BASIC', 'Dialog is auth-dialog-basic');
+        assert.isTrue(element.dialog.opened, 'Dialog is opened');
+      });
+
+      test('Should open ntlm dialog', function() {
+        var request = createRequest();
+        var method = element._processAuthResponse('ntlm', request);
+        assert.equal(element.dialog.nodeName, 'AUTH-DIALOG-NTLM', 'Dialog is auth-dialog-ntlm');
+        assert.isTrue(element.dialog.opened, 'Dialog is opened');
+      });
+    });
+
+    suite('_cacheAuthData()', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Should cache basic data', function() {
+        element._cacheAuthData('basic', initUrl, basicObj);
+        assert.deepEqual(element._cache.basic[initUrl], basicObj);
+      });
+
+      test('Should cache ntlm data', function() {
+        element._cacheAuthData('ntlm', initUrl, authObj);
+        assert.deepEqual(element._cache.ntlm[initUrl], authObj);
+      });
+    });
+
+    suite('_findCachedAuthData()', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Should not find data for empty cache', function() {
+        var auth = element._findCachedAuthData('basic', initUrl);
+        assert.isUndefined(auth);
+      });
+
+      test('Should not find data in basic map', function() {
+        element._cacheAuthData('basic', initUrl, basicObj);
+        var auth = element._findCachedAuthData('basic', 'mulesoft.com');
+        assert.isUndefined(auth);
+      });
+
+      test('Should find data in basic map', function() {
+        element._cacheAuthData('basic', cleanUrl, basicObj);
+        var auth = element._findCachedAuthData('basic', cleanUrl);
+        assert.deepEqual(auth, basicObj);
+      });
+
+      test('Should find data in ntlm map', function() {
+        element._cacheAuthData('ntlm', cleanUrl, authObj);
+        var auth = element._findCachedAuthData('ntlm', cleanUrl);
+        assert.deepEqual(auth, authObj);
+      });
+    });
+
+    suite('_computeCredentialsPath()', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Computes database key for basic auth', function() {
+        var key = element._computeCredentialsPath(cleanUrl, 'basic');
+        assert.equal(key, 'basic/' + encodeURIComponent(cleanUrl));
+      });
+
+      test('Computes database key for ntlm auth', function() {
+        var key = element._computeCredentialsPath(cleanUrl, 'ntlm');
+        assert.equal(key, 'ntlm/' + encodeURIComponent(cleanUrl));
+      });
+    });
+
+    suite('_computeUrlPath()', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Computes database key for basic auth', function() {
+        var url = element._computeUrlPath(initUrl);
+        assert.equal(url, cleanUrl);
+      });
+    });
+
+    function authDialogValue(type) {
+      var value = {
+        username: 'test',
+        password: 'test'
+      };
+      switch (type) {
+        case 'basic': value.hash = 'dGVzdDp0ZXN0'; break;
+        case 'ntlm': value.domain = 'domain.com'; break;
+      }
+      return value;
+    }
+
+    function createAuthDialogEvent(type) {
+      var obj = {
+        detail: {
+          value: authDialogValue(type),
+          type: type,
+          cancelled: false
+        }
+      };
+      return obj;
+    }
+
+    suite('_onAuthDialogResult()', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+        element.url = initUrl;
+      });
+
+      test('Processes the dialog results as basic', function() {
+        var event = createAuthDialogEvent('basic');
+        element._onAuthDialogResult(event);
+        // just one of the changes made after calling base auth setter
+        assert.ok(element._cache.basic[cleanUrl]);
+      });
+
+      test('Processes the dialog results as ntlm', function() {
+        var event = createAuthDialogEvent('ntlm');
+        element._onAuthDialogResult(event);
+        // just one of the changes made after calling ntlm auth setter
+        assert.ok(element._cache.ntlm[cleanUrl]);
+      });
+    });
+
+    suite('_resendRequest()', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+        element.url = initUrl;
+      });
+      test('Fires resend-auth-request event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('resend-auth-request', spy);
+        element._resendRequest();
+        assert.isTrue(spy.calledOnce);
+      });
+    });
+
+    suite('_setNtlmAuthData()', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+        element.url = initUrl;
+      });
+
+      test('Caches the auth data', function() {
+        var value = authDialogValue('ntlm');
+        element._setNtlmAuthData(value);
+        assert.equal(element._cache.ntlm[cleanUrl], value);
+      });
+
+      test('Fires ntlm-data-changed event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('ntlm-data-changed', spy);
+        var value = authDialogValue('ntlm');
+        element._setNtlmAuthData(value);
+        assert.isTrue(spy.calledOnce);
+      });
+
+      test('The ntlm-data-changed event contains auth settings', function(done) {
+        var auth = {
+          method: 'ntlm'
+        };
+        element.addEventListener('ntlm-data-changed', function(e) {
+          assert.deepEqual(e.detail.value, auth);
+          done();
+        });
+        var value = authDialogValue('ntlm');
+        auth.username = value.username;
+        auth.password = value.password;
+        auth.domain = value.domain;
+        element._setNtlmAuthData(value);
+      });
+
+      test('Fires resend-auth-request event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('resend-auth-request', spy);
+        var value = authDialogValue('ntlm');
+        element._setNtlmAuthData(value);
+        assert.isTrue(spy.calledOnce);
+      });
+    });
+
+    suite('_setBasicAuthData()', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+        element.url = initUrl;
+      });
+
+      test('Caches the auth data', function() {
+        var value = authDialogValue('basic');
+        element._setBasicAuthData(value);
+        assert.equal(element._cache.basic[cleanUrl], value);
+      });
+
+      test('Fires request-header-changed event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('request-header-changed', spy);
+        var value = authDialogValue('basic');
+        element._setBasicAuthData(value);
+        assert.isTrue(spy.calledOnce);
+      });
+
+      test('The request-header-changed event contains header details', function(done) {
+        const headerName = 'authorization';
+        const headerValue = 'Basic dGVzdDp0ZXN0';
+        element.addEventListener('request-header-changed', function(e) {
+          assert.equal(e.detail.name, headerName, 'Header name is ok');
+          assert.equal(e.detail.value, headerValue, 'Header value is ok');
+          done();
+        });
+        var value = authDialogValue('basic');
+        element._setBasicAuthData(value);
+      });
+
+      test('Fires resend-auth-request event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('resend-auth-request', spy);
+        var value = authDialogValue('basic');
+        element._setBasicAuthData(value);
+        assert.isTrue(spy.calledOnce);
+      });
+    });
+
+    suite('_storeAuthData()', function() {
+      var element;
+      function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min)) + min;
+      }
+      setup(function() {
+        element = fixture('basic');
+        element.url = cleanUrl + getRandomInt(1000, 2000) + '/';
+      });
+      test('Stores auth data for basic', function() {
+        return element._storeAuthData('basic', basicObj);
+      });
+
+      test('Stores auth data for ntlm', function() {
+        return element._storeAuthData('ntlm', authObj);
+      });
+    });
+  });
+  </script>
+</body>
+
+</html>
