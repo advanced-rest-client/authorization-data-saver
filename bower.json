@@ -23,7 +23,7 @@
     "app-pouchdb": "advanced-rest-client/app-pouchdb#^1.0.0",
     "auth-dialogs": "advanced-rest-client/auth-dialogs#^0.1.1",
     "headers-parser-behavior": "advanced-rest-client/headers-parser-behavior#^0.1.3",
-    "url": "webcomponents/URL#^0.5.7",
+    "url": "advanced-rest-client/URL#^0.6.0",
     "arc-polyfills": "advanced-rest-client/arc-polyfills#^0.1.8",
     "fetch-polyfill": "advanced-rest-client/fetch-polyfill#^0.1.1"
   },
