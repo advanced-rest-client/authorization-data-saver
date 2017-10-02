@@ -1,3 +1,13 @@
+<a name="0.1.4"></a>
+## [0.1.4](https://github.com/advanced-rest-client/authorization-data-saver/compare/0.1.2...0.1.4) (2017-10-02)
+
+
+### New
+
+* Added support for request ID ([2fc2e4d1570e29129d6c7287f93cde7050dbe67c](https://github.com/advanced-rest-client/authorization-data-saver/commit/2fc2e4d1570e29129d6c7287f93cde7050dbe67c))
+
+
+
 <a name="0.1.3"></a>
 ## [0.1.3](https://github.com/advanced-rest-client/authorization-data-saver/compare/0.1.2...v0.1.3) (2017-07-08)
 

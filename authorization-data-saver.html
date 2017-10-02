@@ -236,7 +236,7 @@ See [auth-dialogs](https://github.com/advanced-rest-client/auth-dialogs) for dia
       }
       // Async so the response can be rendered to the user.
       this.async(function() {
-        this._processAuthResponse(method, e.detail.request);
+        this._processAuthResponse(method, e.detail.request, e.detail.id);
       }, 1);
     },
     /**
@@ -276,11 +276,14 @@ See [auth-dialogs](https://github.com/advanced-rest-client/auth-dialogs) for dia
      *
      * @param {String} method Authorization method
      * @param {Request} request The request object.
+     * @param {String} id Request ID
      */
-    _processAuthResponse: function(method, request) {
+    _processAuthResponse: function(method, request, id) {
       if (!method || !request || !request.url) {
         return;
       }
+
+      this.__dialogResultId = id;
       switch (method) {
         case 'basic':
           this._openBasicAuthDialog(request.url);
@@ -453,7 +456,8 @@ See [auth-dialogs](https://github.com/advanced-rest-client/auth-dialogs) for dia
     // Called when the authorization dialog has been closed.
     _onAuthDialogResult: function(e) {
       this._openedDialog = undefined;
-
+      var requestId = this.__dialogResultId;
+      delete this.__dialogResultId;
       if (e.detail.cancelled) {
         return;
       }
@@ -461,11 +465,11 @@ See [auth-dialogs](https://github.com/advanced-rest-client/auth-dialogs) for dia
       switch (e.detail.type) {
         case 'ntlm':
           store = true;
-          this._setNtlmAuthData(e.detail.value);
+          this._setNtlmAuthData(e.detail.value, requestId);
           break;
         case 'basic':
           store = true;
-          this._setBasicAuthData(e.detail.value);
+          this._setBasicAuthData(e.detail.value, requestId);
           break;
       }
       if (store) {
@@ -480,8 +484,9 @@ See [auth-dialogs](https://github.com/advanced-rest-client/auth-dialogs) for dia
      * editor can attach it to the next request.
      *
      * @param {Object} values Map with values from dialog event.
+     * @param {String} id Request ID
      */
-    _setNtlmAuthData: function(values) {
+    _setNtlmAuthData: function(values, id) {
       if (!values) {
         return;
       }
@@ -494,17 +499,19 @@ See [auth-dialogs](https://github.com/advanced-rest-client/auth-dialogs) for dia
       auth.domain = values.domain;
       auth.method = 'ntlm';
       this.fire('ntlm-data-changed', {
-        value: auth
+        value: auth,
+        id: id
       });
-      this._resendRequest();
+      this._resendRequest(id);
     },
     /**
      * Sets the basic authorization data in the `headers` property or in headers in the `request`
      * object if provided.
      *
      * @param {Object} values Map with values from dialog event.
+     * @param {String} id Request ID
      */
-    _setBasicAuthData: function(values) {
+    _setBasicAuthData: function(values, id) {
       if (!values) {
         return;
       }
@@ -518,11 +525,16 @@ See [auth-dialogs](https://github.com/advanced-rest-client/auth-dialogs) for dia
       }, {
         composed: true
       });
-      this._resendRequest();
+      this._resendRequest(id);
     },
-    // Sends an event about sending request with auth data.
-    _resendRequest: function() {
-      this.fire('resend-auth-request', {}, {
+    /**
+     * Sends an event about sending request with auth data.
+     * @param {String} id Request ID
+     */
+    _resendRequest: function(id) {
+      this.fire('resend-auth-request', {
+        id: id
+      }, {
         composed: true
       });
     },
