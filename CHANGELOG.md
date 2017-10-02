@@ -1,3 +1,13 @@
+<a name="0.1.5"></a>
+## [0.1.5](https://github.com/advanced-rest-client/authorization-data-saver/compare/0.1.4...0.1.5) (2017-10-02)
+
+
+### Fix
+
+* Fixing variable name. ([6ae897229cc7c9ee95ad00f65c2c2b508ddd352e](https://github.com/advanced-rest-client/authorization-data-saver/commit/6ae897229cc7c9ee95ad00f65c2c2b508ddd352e))
+
+
+
 <a name="0.1.4"></a>
 ## [0.1.4](https://github.com/advanced-rest-client/authorization-data-saver/compare/0.1.2...0.1.4) (2017-10-02)
 
