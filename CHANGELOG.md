@@ -1,3 +1,9 @@
+<a name="1.0.0"></a>
+# [1.0.0](https://github.com/advanced-rest-client/authorization-data-saver/compare/0.1.5...1.0.0) (2018-05-13)
+
+
+
+
 <a name="0.1.6"></a>
 ## [0.1.6](https://github.com/advanced-rest-client/authorization-data-saver/compare/0.1.5...0.1.6) (2017-10-02)
 
