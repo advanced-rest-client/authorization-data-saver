@@ -1,3 +1,13 @@
+<a name="2.0.0-preview"></a>
+# [2.0.0-preview](https://github.com/advanced-rest-client/authorization-data-saver/compare/0.1.5...2.0.0-preview) (2018-07-26)
+
+
+### Docs
+
+* Updating documentation ([d0540654018c8a545e9b90d3a11b37e6b34c2954](https://github.com/advanced-rest-client/authorization-data-saver/commit/d0540654018c8a545e9b90d3a11b37e6b34c2954))
+
+
+
 <a name="1.0.0"></a>
 # [1.0.0](https://github.com/advanced-rest-client/authorization-data-saver/compare/0.1.5...1.0.0) (2018-05-13)
 
