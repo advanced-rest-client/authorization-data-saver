@@ -1,53 +1,51 @@
 <!doctype html>
-<!--
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
 <html>
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
   <script src="../../web-component-tester/browser.js"></script>
-  <script src="../../iron-test-helpers/test-helpers.js"></script>
-  <script src="../../iron-test-helpers/mock-interactions.js"></script>
-  <!-- Step 1: import the element to test -->
+  <link rel="import" href="../../arc-polyfills/arc-polyfills.html">
+  <link rel="import" href="../../url/url-polyfill.html">
+  <link rel="import" href="../../app-pouchdb/pouchdb.html">
+  <link rel="import" href="../../arc-models/auth-data-model.html">
+  <link rel="import" href="../../neon-animation/web-animations.html">
   <link rel="import" href="../authorization-data-saver.html">
 </head>
-
 <body>
+  <auth-data-model></auth-data-model>
   <test-fixture id="basic">
     <template>
       <authorization-data-saver></authorization-data-saver>
     </template>
   </test-fixture>
   <script>
-  /* global fixture, assert */
   const initUrl = 'http://domain.com/path/?c=d#hash';
   const cleanUrl = 'http://domain.com/path/';
 
-  function createResponse(status, text, headers) {
+  function createResponse(authType, status, statusText) {
     status = status || 401;
-    text = text || 'Authorization required';
-    headers = headers || {'www-authenticate': 'basic'};
-    return new Response('test', {
-      status: status,
-      statusText: text,
-      headers: headers
-    });
+    statusText = statusText || 'Authorization required';
+    let headers = 'x-token: abc\n';
+    if (authType === 'ntlm') {
+      headers += 'www-authenticate: ntlm';
+    } else if (authType === 'basic') {
+      headers += 'www-authenticate: basic';
+    }
+    return {
+      status,
+      statusText,
+      headers,
+      payload: 'test'
+    };
   }
 
   function createRequest() {
-    return new Request(initUrl, {
-      method: 'GET',
-      headers: {'x-token': 'abc'}
-    });
+    return {
+      url: initUrl,
+      headers: 'x-token: abc',
+      method: 'GET'
+    };
   }
 
   const basicObj = {
@@ -64,61 +62,60 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   };
 
   suite('basic', function() {
-
     suite('authorizationMethodFromResponse', function() {
-      var element;
+      let element;
       setup(function() {
         element = fixture('basic');
       });
 
       test('Should not return for not 401 status', function() {
-        var response = createResponse(200, 'OK');
-        var method = element.authorizationMethodFromResponse(response);
+        const response = createResponse('basic', 200, 'OK');
+        const method = element.authorizationMethodFromResponse(response);
         assert.isUndefined(method);
       });
 
       test('Should not return if no www-authenticate header is present', function() {
-        var response = createResponse(null, null, {});
-        var method = element.authorizationMethodFromResponse(response);
+        const response = createResponse(null, null, {});
+        const method = element.authorizationMethodFromResponse(response);
         assert.isUndefined(method);
       });
 
       test('Should return "basic"', function() {
-        var response = createResponse();
-        var method = element.authorizationMethodFromResponse(response);
+        const response = createResponse('basic');
+        const method = element.authorizationMethodFromResponse(response);
         assert.equal(method, 'basic');
       });
 
       test('Should return "ntlm"', function() {
-        var response = createResponse(null, null, {'www-authenticate': 'ntlm'});
-        var method = element.authorizationMethodFromResponse(response);
+        const response = createResponse('ntlm', null, null);
+        const method = element.authorizationMethodFromResponse(response);
         assert.equal(method, 'ntlm');
       });
     });
 
     suite('_processAuthResponse()', function() {
-      var element;
+      let element;
       setup(function() {
         element = fixture('basic');
       });
 
       test('Should open basic dialog', function() {
-        var request = createRequest();
-        var method = element._processAuthResponse('basic', request);
+        const request = createRequest();
+        element._processAuthResponse('basic', request);
         assert.equal(element.dialog.nodeName, 'AUTH-DIALOG-BASIC', 'Dialog is auth-dialog-basic');
         assert.isTrue(element.dialog.opened, 'Dialog is opened');
       });
 
       test('Should open ntlm dialog', function() {
-        var request = createRequest();
-        var method = element._processAuthResponse('ntlm', request);
+        const request = createRequest();
+        element._processAuthResponse('ntlm', request);
         assert.equal(element.dialog.nodeName, 'AUTH-DIALOG-NTLM', 'Dialog is auth-dialog-ntlm');
         assert.isTrue(element.dialog.opened, 'Dialog is opened');
       });
     });
 
     suite('_cacheAuthData()', function() {
-      var element;
+      let element;
       setup(function() {
         element = fixture('basic');
       });
@@ -135,66 +132,49 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     });
 
     suite('_findCachedAuthData()', function() {
-      var element;
+      let element;
       setup(function() {
         element = fixture('basic');
       });
 
       test('Should not find data for empty cache', function() {
-        var auth = element._findCachedAuthData('basic', initUrl);
+        const auth = element._findCachedAuthData('basic', initUrl);
         assert.isUndefined(auth);
       });
 
       test('Should not find data in basic map', function() {
         element._cacheAuthData('basic', initUrl, basicObj);
-        var auth = element._findCachedAuthData('basic', 'mulesoft.com');
+        const auth = element._findCachedAuthData('basic', 'mulesoft.com');
         assert.isUndefined(auth);
       });
 
       test('Should find data in basic map', function() {
         element._cacheAuthData('basic', cleanUrl, basicObj);
-        var auth = element._findCachedAuthData('basic', cleanUrl);
+        const auth = element._findCachedAuthData('basic', cleanUrl);
         assert.deepEqual(auth, basicObj);
       });
 
       test('Should find data in ntlm map', function() {
         element._cacheAuthData('ntlm', cleanUrl, authObj);
-        var auth = element._findCachedAuthData('ntlm', cleanUrl);
+        const auth = element._findCachedAuthData('ntlm', cleanUrl);
         assert.deepEqual(auth, authObj);
       });
     });
 
-    suite('_computeCredentialsPath()', function() {
-      var element;
-      setup(function() {
-        element = fixture('basic');
-      });
-
-      test('Computes database key for basic auth', function() {
-        var key = element._computeCredentialsPath(cleanUrl, 'basic');
-        assert.equal(key, 'basic/' + encodeURIComponent(cleanUrl));
-      });
-
-      test('Computes database key for ntlm auth', function() {
-        var key = element._computeCredentialsPath(cleanUrl, 'ntlm');
-        assert.equal(key, 'ntlm/' + encodeURIComponent(cleanUrl));
-      });
-    });
-
     suite('_computeUrlPath()', function() {
-      var element;
+      let element;
       setup(function() {
         element = fixture('basic');
       });
 
       test('Computes database key for basic auth', function() {
-        var url = element._computeUrlPath(initUrl);
+        const url = element._computeUrlPath(initUrl);
         assert.equal(url, cleanUrl);
       });
     });
 
     function authDialogValue(type) {
-      var value = {
+      const value = {
         username: 'test',
         password: 'test'
       };
@@ -206,7 +186,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     function createAuthDialogEvent(type) {
-      var obj = {
+      const obj = {
         detail: {
           value: authDialogValue(type),
           type: type,
@@ -217,21 +197,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     suite('_onAuthDialogResult()', function() {
-      var element;
+      let element;
       setup(function() {
         element = fixture('basic');
         element.url = initUrl;
       });
 
       test('Processes the dialog results as basic', function() {
-        var event = createAuthDialogEvent('basic');
+        const event = createAuthDialogEvent('basic');
         element._onAuthDialogResult(event);
         // just one of the changes made after calling base auth setter
         assert.ok(element._cache.basic[cleanUrl]);
       });
 
       test('Processes the dialog results as ntlm', function() {
-        var event = createAuthDialogEvent('ntlm');
+        const event = createAuthDialogEvent('ntlm');
         element._onAuthDialogResult(event);
         // just one of the changes made after calling ntlm auth setter
         assert.ok(element._cache.ntlm[cleanUrl]);
@@ -239,13 +219,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     });
 
     suite('_resendRequest()', function() {
-      var element;
+      let element;
       setup(function() {
         element = fixture('basic');
         element.url = initUrl;
       });
       test('Fires resend-auth-request event', function() {
-        var spy = sinon.spy();
+        const spy = sinon.spy();
         element.addEventListener('resend-auth-request', spy);
         element._resendRequest();
         assert.isTrue(spy.calledOnce);
@@ -253,35 +233,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     });
 
     suite('_setNtlmAuthData()', function() {
-      var element;
+      let element;
       setup(function() {
         element = fixture('basic');
         element.url = initUrl;
       });
 
       test('Caches the auth data', function() {
-        var value = authDialogValue('ntlm');
+        const value = authDialogValue('ntlm');
         element._setNtlmAuthData(value);
         assert.equal(element._cache.ntlm[cleanUrl], value);
       });
 
       test('Fires ntlm-data-changed event', function() {
-        var spy = sinon.spy();
+        const spy = sinon.spy();
         element.addEventListener('ntlm-data-changed', spy);
-        var value = authDialogValue('ntlm');
+        const value = authDialogValue('ntlm');
         element._setNtlmAuthData(value);
         assert.isTrue(spy.calledOnce);
       });
 
       test('The ntlm-data-changed event contains auth settings', function(done) {
-        var auth = {
+        const auth = {
           method: 'ntlm'
         };
         element.addEventListener('ntlm-data-changed', function(e) {
           assert.deepEqual(e.detail.value, auth);
           done();
         });
-        var value = authDialogValue('ntlm');
+        const value = authDialogValue('ntlm');
         auth.username = value.username;
         auth.password = value.password;
         auth.domain = value.domain;
@@ -289,31 +269,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
 
       test('Fires resend-auth-request event', function() {
-        var spy = sinon.spy();
+        const spy = sinon.spy();
         element.addEventListener('resend-auth-request', spy);
-        var value = authDialogValue('ntlm');
+        const value = authDialogValue('ntlm');
         element._setNtlmAuthData(value);
         assert.isTrue(spy.calledOnce);
       });
     });
 
     suite('_setBasicAuthData()', function() {
-      var element;
+      let element;
       setup(function() {
         element = fixture('basic');
         element.url = initUrl;
       });
 
       test('Caches the auth data', function() {
-        var value = authDialogValue('basic');
+        const value = authDialogValue('basic');
         element._setBasicAuthData(value);
         assert.equal(element._cache.basic[cleanUrl], value);
       });
 
       test('Fires request-header-changed event', function() {
-        var spy = sinon.spy();
+        const spy = sinon.spy();
         element.addEventListener('request-header-changed', spy);
-        var value = authDialogValue('basic');
+        const value = authDialogValue('basic');
         element._setBasicAuthData(value);
         assert.isTrue(spy.calledOnce);
       });
@@ -326,21 +306,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.equal(e.detail.value, headerValue, 'Header value is ok');
           done();
         });
-        var value = authDialogValue('basic');
+        const value = authDialogValue('basic');
         element._setBasicAuthData(value);
       });
 
       test('Fires resend-auth-request event', function() {
-        var spy = sinon.spy();
+        const spy = sinon.spy();
         element.addEventListener('resend-auth-request', spy);
-        var value = authDialogValue('basic');
+        const value = authDialogValue('basic');
         element._setBasicAuthData(value);
         assert.isTrue(spy.calledOnce);
       });
     });
 
     suite('_storeAuthData()', function() {
-      var element;
+      let element;
       function getRandomInt(min, max) {
         min = Math.ceil(min);
         max = Math.floor(max);
