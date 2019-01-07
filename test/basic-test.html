@@ -91,6 +91,12 @@
         const method = element.authorizationMethodFromResponse(response);
         assert.equal(method, 'ntlm');
       });
+
+      test('Returns undefined when method is not know', function() {
+        const response = createResponse('other', null, null);
+        const method = element.authorizationMethodFromResponse(response);
+        assert.isUndefined(method);
+      });
     });
 
     suite('_processAuthResponse()', function() {
@@ -111,6 +117,30 @@
         element._processAuthResponse('ntlm', request);
         assert.equal(element.dialog.nodeName, 'AUTH-DIALOG-NTLM', 'Dialog is auth-dialog-ntlm');
         assert.isTrue(element.dialog.opened, 'Dialog is opened');
+      });
+
+      test('Sets __dialogResultId', function() {
+        const request = createRequest();
+        element._processAuthResponse('basic', request, 'test-id');
+        assert.equal(element.__dialogResultId, 'test-id');
+      });
+
+      test('Does nothing when method is missing', function() {
+        const request = createRequest();
+        element._processAuthResponse(undefined, request, 'test-id');
+        assert.isUndefined(element.__dialogResultId);
+      });
+
+      test('Does nothing when request is missing', function() {
+        element._processAuthResponse('basic', undefined, 'test-id');
+        assert.isUndefined(element.__dialogResultId);
+      });
+
+      test('Does nothing when request.url is missing', function() {
+        const request = createRequest();
+        delete request.url;
+        element._processAuthResponse('basic', request, 'test-id');
+        assert.isUndefined(element.__dialogResultId);
       });
     });
 
@@ -170,6 +200,16 @@
       test('Computes database key for basic auth', function() {
         const url = element._computeUrlPath(initUrl);
         assert.equal(url, cleanUrl);
+      });
+
+      test('Returns empty string when no argument', () => {
+        const result = element._computeUrlPath();
+        assert.equal(result, '');
+      });
+
+      test('Returns passed argument when url is invalid', () => {
+        const result = element._computeUrlPath('test');
+        assert.equal(result, 'test');
       });
     });
 
@@ -337,6 +377,116 @@
       test('Stores auth data for ntlm', function() {
         return element._storeAuthData('ntlm', authObj);
       });
+    });
+
+    suite('_restoreBasicData()', () => {
+      let element;
+      let doc;
+      setup(() => {
+        element = fixture('basic');
+        element.url = 'http://domain.com';
+        element._openBasicAuthDialog(element.url);
+        doc = {
+          username: 'test',
+          password: 'pwd'
+        };
+      });
+
+      test('Sets username', () => {
+        element._restoreBasicData(doc);
+        const dialog = element.dialog;
+        assert.equal(dialog.username, doc.username);
+      });
+
+      test('Sets password', () => {
+        element._restoreBasicData(doc);
+        const dialog = element.dialog;
+        assert.equal(dialog.password, doc.password);
+      });
+    });
+
+    suite('_restoreNtlmData()', () => {
+      let element;
+      let doc;
+      setup(() => {
+        element = fixture('basic');
+        element.url = 'http://domain.com';
+        element._openNtlmAuthDialog(element.url);
+        doc = {
+          username: 'test',
+          password: 'pwd',
+          domain: 'my-domain'
+        };
+      });
+
+      test('Sets username', () => {
+        element._restoreNtlmData(doc);
+        const dialog = element.dialog;
+        assert.equal(dialog.username, doc.username);
+      });
+
+      test('Sets password', () => {
+        element._restoreNtlmData(doc);
+        const dialog = element.dialog;
+        assert.equal(dialog.password, doc.password);
+      });
+
+      test('Sets domain', () => {
+        element._restoreNtlmData(doc);
+        const dialog = element.dialog;
+        assert.equal(dialog.domain, doc.domain);
+      });
+    });
+
+    suite('_setRestoredAuthData()', () => {
+      let element;
+      setup(() => {
+        element = fixture('basic');
+        element.url = 'http://domain.com';
+      });
+
+      test('Calls _restoreBasicData()', () => {
+        element._openBasicAuthDialog(element.url);
+        const spy = sinon.spy(element, '_restoreBasicData');
+        element._setRestoredAuthData('basic', {});
+        assert.isTrue(spy.called);
+      });
+
+      test('Calls _restoreNtlmData()', () => {
+        element._openNtlmAuthDialog(element.url);
+        const spy = sinon.spy(element, '_restoreNtlmData');
+        element._setRestoredAuthData('ntlm', {});
+        assert.isTrue(spy.called);
+      });
+    });
+  });
+
+  suite('_applyRequestBasicAuthData()', () => {
+    let element;
+    setup(() => {
+      element = fixture('basic');
+      element.url = 'http://domain.com';
+    });
+
+    test('Dispatches request-headers-changed', () => {
+      const spy = sinon.spy();
+      element.addEventListener('request-headers-changed', spy);
+      element._applyRequestBasicAuthData({}, {
+        hash: 'test'
+      });
+      assert.isTrue(spy.called);
+      assert.equal(spy.args[0][0].detail.value, 'authorization: Basic test');
+    });
+
+    test('Does nothing if value did not changed', () => {
+      const spy = sinon.spy();
+      element.addEventListener('request-headers-changed', spy);
+      element._applyRequestBasicAuthData({
+        headers: 'authorization: Basic test'
+      }, {
+        hash: 'test'
+      });
+      assert.isFalse(spy.called);
     });
   });
   </script>
