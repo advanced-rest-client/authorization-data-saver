@@ -165,7 +165,7 @@ the License.
      */
     _applyRequestBasicAuthData(request, data) {
       const value = 'Basic ' + data.hash;
-      const headers = request.headers;
+      const headers = request.headers || '';
       const newHeaders = this.replaceHeaderValue(headers, 'authorization', value);
       if (headers !== newHeaders) {
         this.dispatchEvent(new CustomEvent('request-headers-changed', {
