@@ -213,7 +213,7 @@
               "column": 4
             },
             "end": {
-              "line": 148,
+              "line": 147,
               "column": 5
             }
           },
@@ -238,20 +238,24 @@
           "sourceRange": {
             "file": "../headers-parser-behavior/headers-parser-behavior.html",
             "start": {
-              "line": 153,
+              "line": 154,
               "column": 4
             },
             "end": {
-              "line": 185,
+              "line": 189,
               "column": 5
             }
           },
           "metadata": {},
           "params": [
             {
-              "name": "headersString"
+              "name": "headersString",
+              "type": "String"
             }
           ],
+          "return": {
+            "type": "Array.<Object>"
+          },
           "inheritedFrom": "ArcBehaviors.HeadersParserBehavior"
         },
         {
@@ -261,20 +265,24 @@
           "sourceRange": {
             "file": "../headers-parser-behavior/headers-parser-behavior.html",
             "start": {
-              "line": 190,
+              "line": 197,
               "column": 4
             },
             "end": {
-              "line": 213,
+              "line": 221,
               "column": 5
             }
           },
           "metadata": {},
           "params": [
             {
-              "name": "headers"
+              "name": "headers",
+              "type": "(Headers | Object)"
             }
           ],
+          "return": {
+            "type": "Array.<Object>"
+          },
           "inheritedFrom": "ArcBehaviors.HeadersParserBehavior"
         },
         {
@@ -284,11 +292,11 @@
           "sourceRange": {
             "file": "../headers-parser-behavior/headers-parser-behavior.html",
             "start": {
-              "line": 223,
+              "line": 231,
               "column": 4
             },
             "end": {
-              "line": 237,
+              "line": 245,
               "column": 5
             }
           },
@@ -318,11 +326,11 @@
           "sourceRange": {
             "file": "../headers-parser-behavior/headers-parser-behavior.html",
             "start": {
-              "line": 245,
+              "line": 253,
               "column": 4
             },
             "end": {
-              "line": 266,
+              "line": 274,
               "column": 5
             }
           },
@@ -347,11 +355,11 @@
           "sourceRange": {
             "file": "../headers-parser-behavior/headers-parser-behavior.html",
             "start": {
-              "line": 277,
+              "line": 285,
               "column": 4
             },
             "end": {
-              "line": 311,
+              "line": 319,
               "column": 5
             }
           },
@@ -386,11 +394,11 @@
           "sourceRange": {
             "file": "../headers-parser-behavior/headers-parser-behavior.html",
             "start": {
-              "line": 317,
+              "line": 325,
               "column": 4
             },
             "end": {
-              "line": 351,
+              "line": 359,
               "column": 5
             }
           },
