@@ -3,14 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
   <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-  <script src="../../../wct-browser-legacy/browser.js"></script>
-  <script type="module" src="../../../arc-polyfills/arc-polyfills.js"></script>
-  <script type="module" src="../../../url/url-polyfill.js"></script>
-  <script type="module" src="../../../app-pouchdb/pouchdb.js"></script>
-  <script type="module" src="../../../arc-models/auth-data-model.js"></script>
-  <script type="module" src="../../../@polymer/neon-animation/web-animations.js"></script>
-  <script type="module" src="../authorization-data-saver.js"></script>
+  <script src="../../../@polymer/test-fixture/test-fixture.js"></script>
+  <script src="../../../mocha/mocha.js"></script>
+  <script src="../../../chai/chai.js"></script>
+  <script src="../../../wct-mocha/wct-mocha.js"></script>
+
+  <script src="../../../web-animations-js/web-animations-next.min.js"></script>
+  <script type="module" src="../../../pouchdb/dist/pouchdb.js"></script>
+  <script type="module" src="../../../@advanced-rest-client/arc-models/auth-data-model.js"></script>
+
 </head>
 <body>
   <auth-data-model></auth-data-model>
@@ -20,11 +23,6 @@
     </template>
   </test-fixture>
   <script type="module">
-  import '../../../arc-polyfills/arc-polyfills.js';
-  import '../../../url/url-polyfill.js';
-  import '../../../app-pouchdb/pouchdb.js';
-  import '../../../arc-models/auth-data-model.js';
-  import '../../../@polymer/neon-animation/web-animations.js';
   import '../authorization-data-saver.js';
   const initHeaders = 'x-token: abc';
   const initUrl = 'http://domain.com/?c=d';
@@ -106,9 +104,6 @@
         element.removeEventListener('request-headers-changed', clb);
         done();
       });
-      window._aaaaa = element;
-      const list = document.body.querySelectorAll('authorization-data-saver');
-      console.log(list);
       beforeRequestEvent();
     });
 

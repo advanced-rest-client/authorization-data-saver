@@ -11,11 +11,10 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import { PolymerElement } from '../../@polymer/polymer/polymer-element.js';
-
-import '../../auth-dialogs/auth-dialogs.js';
-import '../../headers-parser-behavior/headers-parser-behavior.js';
-import { html } from '../../@polymer/polymer/lib/utils/html-tag.js';
+import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
+import {html} from '../../@polymer/polymer/lib/utils/html-tag.js';
+import {HeadersParserMixin} from '../../@advanced-rest-client/headers-parser-mixin/headers-parser-mixin.js';
+import '../../@advanced-rest-client/auth-dialogs/auth-dialogs.js';
 /**
  * An element responsible for applying authorization data to the request
  * before sending it to a server and requesting credentials data from the user.
@@ -45,7 +44,7 @@ import { html } from '../../@polymer/polymer/lib/utils/html-tag.js';
  * @demo demo/index.html
  * @appliesMixin ArcBehaviors.HeadersParserBehavior
  */
-class AuthorizationDataSaver extends ArcBehaviors.HeadersParserBehavior(PolymerElement) {
+class AuthorizationDataSaver extends HeadersParserMixin(PolymerElement) {
   static get template() {
     return html`
     <style>
@@ -62,7 +61,6 @@ class AuthorizationDataSaver extends ArcBehaviors.HeadersParserBehavior(PolymerE
 `;
   }
 
-  static get is() { return 'authorization-data-saver'; }
   static get properties() {
     return {
       /**
@@ -117,6 +115,8 @@ class AuthorizationDataSaver extends ArcBehaviors.HeadersParserBehavior(PolymerE
   /**
    * Handler for the ARC's event `before-request`.
    * The event will be handled synchronously.
+   *
+   * @param {CustomEvent} e
    */
   _beforeRequestHandler(e) {
     this.processRequest(e.detail);
@@ -205,6 +205,7 @@ class AuthorizationDataSaver extends ArcBehaviors.HeadersParserBehavior(PolymerE
 
   /**
    * Handler to the `response-ready` event
+   * @param {CustomEvent} e
    */
   _afterRequestHandler(e) {
     const method = this.authorizationMethodFromResponse(e.detail.response);
@@ -277,6 +278,8 @@ class AuthorizationDataSaver extends ArcBehaviors.HeadersParserBehavior(PolymerE
   /**
    * Opens a basic authorization dialog when response status is 401 and basic or digest
    * authorization is required.
+   *
+   * @param {String} url
    */
   _openBasicAuthDialog(url) {
     if (this.url !== url) {
@@ -288,6 +291,7 @@ class AuthorizationDataSaver extends ArcBehaviors.HeadersParserBehavior(PolymerE
   /**
    * Opens the NTLM authorization dialog when response status is 401 and NTLM authorization
    * is required.
+   * @param {String} url
    */
   _openNtlmAuthDialog(url) {
     if (this.url !== url) {
@@ -357,6 +361,9 @@ class AuthorizationDataSaver extends ArcBehaviors.HeadersParserBehavior(PolymerE
   /**
    * Called when stored authorization data has been found in database or cache.
    * It updates the data in opened dialog.
+   *
+   * @param {String} authMethod
+   * @param {Object} doc
    */
   _setRestoredAuthData(authMethod, doc) {
     switch (authMethod) {
@@ -511,6 +518,9 @@ class AuthorizationDataSaver extends ArcBehaviors.HeadersParserBehavior(PolymerE
   }
   /**
    * Stores the data in the datastore.
+   *
+   * @param {String} authMethod
+   * @param {Object} authData
    */
   _storeAuthData(authMethod, authData) {
     const e = new CustomEvent('auth-data-changed', {
@@ -526,7 +536,6 @@ class AuthorizationDataSaver extends ArcBehaviors.HeadersParserBehavior(PolymerE
     this.dispatchEvent(e);
     if (!e.defaultPrevented) {
       console.warn('auth-data-changed event not handled');
-      return;
     }
   }
 
@@ -557,4 +566,4 @@ class AuthorizationDataSaver extends ArcBehaviors.HeadersParserBehavior(PolymerE
    * @param {String} value Value of the header
    */
 }
-window.customElements.define(AuthorizationDataSaver.is, AuthorizationDataSaver);
+window.customElements.define('authorization-data-saver', AuthorizationDataSaver);

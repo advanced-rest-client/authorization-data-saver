@@ -5,16 +5,12 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   authorization-data-saver.html
+ *   authorization-data-saver.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
-
-/// <reference path="../polymer/types/polymer-element.d.ts" />
-/// <reference path="../auth-dialogs/auth-dialogs.d.ts" />
-/// <reference path="../headers-parser-behavior/headers-parser-behavior.d.ts" />
 
 declare namespace LogicElements {
 
@@ -72,7 +68,7 @@ declare namespace LogicElements {
      * Handler for the ARC's event `before-request`.
      * The event will be handled synchronously.
      */
-    _beforeRequestHandler(e: any): void;
+    _beforeRequestHandler(e: CustomEvent|null): void;
 
     /**
      * Processes request before it's send to the transport library.
@@ -113,7 +109,7 @@ declare namespace LogicElements {
     /**
      * Handler to the `response-ready` event
      */
-    _afterRequestHandler(e: any): void;
+    _afterRequestHandler(e: CustomEvent|null): void;
 
     /**
      * Checks if the response require authorization and if so it returns the authorization
@@ -145,13 +141,13 @@ declare namespace LogicElements {
      * Opens a basic authorization dialog when response status is 401 and basic or digest
      * authorization is required.
      */
-    _openBasicAuthDialog(url: any): void;
+    _openBasicAuthDialog(url: String|null): void;
 
     /**
      * Opens the NTLM authorization dialog when response status is 401 and NTLM authorization
      * is required.
      */
-    _openNtlmAuthDialog(url: any): void;
+    _openNtlmAuthDialog(url: String|null): void;
 
     /**
      * Restores the database object entry or cached object if any.
@@ -183,7 +179,7 @@ declare namespace LogicElements {
      * Called when stored authorization data has been found in database or cache.
      * It updates the data in opened dialog.
      */
-    _setRestoredAuthData(authMethod: any, doc: any): void;
+    _setRestoredAuthData(authMethod: String|null, doc: object|null): void;
 
     /**
      * Restore stored data to basic auth dialog.
@@ -240,10 +236,15 @@ declare namespace LogicElements {
     /**
      * Stores the data in the datastore.
      */
-    _storeAuthData(authMethod: any, authData: any): void;
+    _storeAuthData(authMethod: String|null, authData: object|null): void;
   }
 }
 
-interface HTMLElementTagNameMap {
-  "authorization-data-saver": LogicElements.AuthorizationDataSaver;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "authorization-data-saver": LogicElements.AuthorizationDataSaver;
+  }
 }
+
+export {};

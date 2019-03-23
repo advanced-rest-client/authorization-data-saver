@@ -12,17 +12,19 @@
   "version": "3.0.0-preview.1",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@polymer/gen-typescript-declarations": "^1.6.0",
+    "@advanced-rest-client/arc-models": "^3.0.0-preview.2",
+    "@polymer/gen-typescript-declarations": "^1.6.1",
     "@polymer/iron-component-page": "^4.0.0",
     "@polymer/iron-demo-helpers": "^3.0.0",
     "@polymer/iron-test-helpers": "^3.0.0",
-    "@webcomponents/webcomponentsjs": "^2.0.0",
-    "web-animations-js": "^2.3.1",
     "@polymer/test-fixture": "^4.0.2",
+    "@webcomponents/webcomponentsjs": "^2.0.0",
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
+    "pouchdb": "^7.0.0",
     "sinon": "^7.2.3",
-    "wct-mocha": "^1.0.0"
+    "wct-mocha": "^1.0.0",
+    "web-animations-js": "^2.3.1"
   },
   "main": "authorization-data-saver.js",
   "scripts": {
@@ -39,8 +41,10 @@
     "The Advanced REST client authors <arc@mulesoft.com>"
   ],
   "dependencies": {
-    "source-map-support": "^0.5.9",
-    "@polymer/polymer": "^3.0.0"
+    "@advanced-rest-client/auth-dialogs": "^3.0.0-preview.1",
+    "@advanced-rest-client/headers-parser-mixin": "^3.0.0-preview.2",
+    "@polymer/polymer": "^3.0.0",
+    "source-map-support": "^0.5.9"
   },
   "contributors": [
     "Pawel Psztyc",
