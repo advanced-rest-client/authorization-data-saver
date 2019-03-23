@@ -1,27 +1,42 @@
-<!doctype html>
-<html>
-<head>
+<!DOCTYPE html><html><head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
   <title>authorization-data-saver demo</title>
-  <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
-  <link rel="import" href="../../app-pouchdb/pouchdb.html">
-  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
-  <link rel="import" href="../../arc-polyfills/arc-polyfills.html">
-  <link rel="import" href="../../url/url-polyfill.html">
-  <link rel="import" href="../../arc-models/auth-data-model.html">
-  <link rel="import" href="../../neon-animation/web-animations.html">
-  <link rel="import" href="../authorization-data-saver.html">
-  <custom-style>
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script type="module" src="../../../app-pouchdb/pouchdb.js"></script>
+  <script type="module" src="../../../@polymer/iron-demo-helpers/demo-pages-shared-styles.js"></script>
+  <script type="module" src="../../../arc-polyfills/arc-polyfills.js"></script>
+  <script type="module" src="../../../url/url-polyfill.js"></script>
+  <script type="module" src="../../../arc-models/auth-data-model.js"></script>
+  <script type="module" src="../../../@polymer/neon-animation/web-animations.js"></script>
+  <script type="module" src="../authorization-data-saver.js"></script>
+  <script type="module">
+const $_documentContainer = document.createElement('template');
+
+$_documentContainer.innerHTML = `<custom-style>
     <style include="demo-pages-shared-styles"></style>
-  </custom-style>
+  </custom-style>`;
+
+document.body.appendChild($_documentContainer.content);
+</script>
 </head>
-<body unresolved>
-  <auth-data-model></auth-data-model>
-  <div class="vertical-section-container centered">
-    <h3>The `authorization-data-saver`</h3>
+<body unresolved="">
+  <script type="module">
+const $_documentContainer = document.createElement('template');
+$_documentContainer.innerHTML = `<auth-data-model></auth-data-model>`;
+document.body.appendChild($_documentContainer.content);
+</script>
+  <script type="module">
+const $_documentContainer = document.createElement('template');
+
+$_documentContainer.innerHTML = `<div class="vertical-section-container centered">
+    <h3>The \`authorization-data-saver\`</h3>
     <authorization-data-saver></authorization-data-saver>
-  </div>
-</body>
-</html>
+  </div>`;
+
+document.body.appendChild($_documentContainer.content);
+</script>
+
+
+</body></html>

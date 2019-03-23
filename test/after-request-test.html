@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-  <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
-  <script src="../../web-component-tester/browser.js"></script>
-  <link rel="import" href="../../arc-polyfills/arc-polyfills.html">
-  <link rel="import" href="../../url/url-polyfill.html">
-  <link rel="import" href="../../app-pouchdb/pouchdb.html">
-  <link rel="import" href="../../arc-models/auth-data-model.html">
-  <link rel="import" href="../../neon-animation/web-animations.html">
-  <link rel="import" href="../authorization-data-saver.html">
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script src="../../../wct-browser-legacy/browser.js"></script>
+  <script type="module" src="../../../arc-polyfills/arc-polyfills.js"></script>
+  <script type="module" src="../../../url/url-polyfill.js"></script>
+  <script type="module" src="../../../app-pouchdb/pouchdb.js"></script>
+  <script type="module" src="../../../arc-models/auth-data-model.js"></script>
+  <script type="module" src="../../../@polymer/neon-animation/web-animations.js"></script>
+  <script type="module" src="../authorization-data-saver.js"></script>
 </head>
 <body>
   <auth-data-model></auth-data-model>
@@ -19,7 +19,13 @@
       <authorization-data-saver></authorization-data-saver>
     </template>
   </test-fixture>
-  <script>
+  <script type="module">
+  import '../../../arc-polyfills/arc-polyfills.js';
+  import '../../../url/url-polyfill.js';
+  import '../../../app-pouchdb/pouchdb.js';
+  import '../../../arc-models/auth-data-model.js';
+  import '../../../@polymer/neon-animation/web-animations.js';
+  import '../authorization-data-saver.js';
   const initHeaders = 'x-token: abc';
   const initUrl = 'http://domain.com/?c=d';
 
