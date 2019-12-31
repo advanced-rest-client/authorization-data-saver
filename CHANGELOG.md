@@ -79,3 +79,11 @@
 
 
 
+<a name="3.0.0"></a>
+# [3.0.0](https://github.com/advanced-rest-client/authorization-data-saver/compare/2.0.0-preview...3.0.0) (2019-12-31)
+
+## Refactor
+
+* upgrading component to final WC spec and to LitElement [ae528c4](https://github.com/advanced-rest-client/authorization-data-saver/commit/ae528c4962a350754812063a6eebd1a22dbcd312) by Pawel
+
+
