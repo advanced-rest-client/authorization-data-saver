@@ -28,46 +28,5 @@
     "@advanced-rest-client/auth-dialogs": "^3.0.0",
     "@advanced-rest-client/headers-parser-mixin": "^3.0.0",
     "lit-element": "^2.2.1"
-  },
-  "devDependencies": {
-    "@advanced-rest-client/arc-models": "^3.0.0-preview.11",
-    "@advanced-rest-client/arc-demo-helper": "^1.0.14",
-    "@advanced-rest-client/eslint-config": "^1.1.2",
-    "@advanced-rest-client/prettier-config": "^0.1.0",
-    "@advanced-rest-client/testing-karma-sl": "^1.0.5",
-    "@commitlint/cli": "^8.1.0",
-    "@commitlint/config-conventional": "^7.0.0",
-    "@open-wc/testing": "^2.3.3",
-    "@open-wc/testing-karma": "^3.1.29",
-    "@polymer/gen-typescript-declarations": "^1.6.2",
-    "pouchdb": "^7.1.1",
-    "deepmerge": "^4.0.0",
-    "es-dev-server": "^1.17.2",
-    "husky": "^1.0.0",
-    "lint-staged": "^9.2.5",
-    "sinon": "^7.4.2",
-    "web-animations-js": "^2.3.1"
-  },
-  "scripts": {
-    "test": "karma start --coverage",
-    "update-types": "gen-typescript-declarations --deleteExisting --outDir .",
-    "start": "es-dev-server --app-index demo/index.html --node-resolve --open --watch",
-    "start:compatibility": "es-dev-server --app-index demo/index.html --compatibility all --node-resolve --open --watch",
-    "lint:eslint": "eslint --ext .js,.html .",
-    "format:eslint": "eslint --ext .js,.html . --fix",
-    "lint:prettier": "prettier \"**/*.js\" --list-different || (echo '↑↑ these files are not prettier formatted ↑↑' && exit 1)",
-    "format:prettier": "prettier \"**/*.js\" --write",
-    "lint": "npm run lint:eslint && npm run lint:prettier",
-    "format": "npm run format:eslint && npm run format:prettier",
-    "test:watch": "karma start --auto-watch=true --single-run=false",
-    "test:legacy": "karma start --compatibility all --coverage",
-    "test:legacy:watch": "karma start --compatibility all --auto-watch=true --single-run=false",
-    "test:sl": "karma start karma.sl.config.js --compatibility all --coverage"
-  },
-  "lint-staged": {
-    "*.js": [
-      "eslint --fix",
-      "git add"
-    ]
   }
 }
